@@ -1,0 +1,9 @@
+#!/bin/bash
+[ $# -eq 2 ] || { echo "usage: bash $0 FILE SECTION"; exit 1; }
+file=$1
+section=$2
+pattern=$(sed 's/\./\\./g' <<< $section)
+nrs=$(objdump -h $file | awk "/$pattern/ {print \$3, \$6}")
+size=$(printf %d 0x$(cut -d' ' -f1 <<< "$nrs"))
+offset=$(printf %d 0x$(cut -d' ' -f2 <<< "$nrs"))
+exec dd if=$file ibs=1 skip=$offset count=$size 2>/dev/null
